@@ -1,0 +1,27 @@
+---
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: dotnet-clean-arch-gitops
+  title: debug
+  description: Template for Dotnet
+  tags:
+    - debug
+spec:
+  owner: sourabh.rustagi
+  type: debug
+  steps:
+    - id: template
+      name: Preparing Dotnet template
+      action: dotnet:template:install
+      input:
+        package: Clean.Architecture.Solution.Template::8.0.0-preview.7.2
+    - id: template
+      name: Preparing Dotnet new Clean Architecture Solution
+      action: dotnet:new
+      input:
+        template: ca-sln
+        args:
+          - --client-framework Angular 
+          - --output dotnetapp
+          
