@@ -17,7 +17,7 @@ spec:
       input:
         package: Clean.Architecture.Solution.Template::8.0.0-preview.7.2
         args:
-        - ""
+        - --force
     - id: template
       name: Preparing Dotnet new Clean Architecture Solution
       action: dotnet:new
