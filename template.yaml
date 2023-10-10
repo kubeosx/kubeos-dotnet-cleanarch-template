@@ -24,6 +24,5 @@ spec:
       input:
         template: ca-sln
         args:
-          - --client-framework Angular 
-          - --output dotnetapp
+          - -cf None -o dotnetapp
           
