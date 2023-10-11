@@ -10,6 +10,18 @@ metadata:
 spec:
   owner: sourabh.rustagi
   type: debug
+  parameters:
+    - title: Dotnet Solution/Project details
+      required:
+        - project_name # solution name
+      properties:
+        component_id:
+          title: Name
+          type: string
+          description: Unique name of the component - will be used for Dotnet Solution file name
+          ui:field: EntityNamePicker
+          maxLength: 50
+          pattern: '^[a-z0-9]+$'
   steps:
     - id: template
       name: Preparing Dotnet template
@@ -24,5 +36,8 @@ spec:
       input:
         template: ca-sln
         args:
-          - --help
+          - -cf
+          - None
+          - -o
+          - ${{ parameter.project_name }}
           
