@@ -15,7 +15,7 @@ spec:
       required:
         - project_name # solution name
       properties:
-        component_id:
+        project_name:
           title: Name
           type: string
           description: Unique name of the component - will be used for Dotnet Solution file name
