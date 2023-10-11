@@ -62,7 +62,6 @@ spec:
       name: Preparing Dotnet new Clean Architecture Solution
       action: dotnet:new
       input:
-        targetPath: template/
         template: ca-sln
         args:
           - -cf
@@ -78,8 +77,7 @@ spec:
         description: This is ${{ parameters.project_name }}
         repoUrl: ${{ parameters.repoUrl }}
         defaultBranch: main
-        repoVisibility: public
-        sourcePath: template  
+        repoVisibility: public  
         secrets:
           "DOCKER_USER": ${{ parameters.docker_username }}
           "DOCKER_PASSWORD" :  ${{ parameters.docker_password }}
