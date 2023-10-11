@@ -22,7 +22,24 @@ spec:
           ui:field: EntityNamePicker
           maxLength: 50
           pattern: '^[a-z0-9]+$'
-          
+
+        owner:
+          title: Owner
+          type: string
+          description: Owner of the component
+          ui:field: OwnerPicker
+          ui:options:
+            allowedKinds:
+              - Group
+        system:
+          title: System
+          type: string
+          description: System of the component
+          ui:field: EntityPicker
+          ui:options:
+            catalogFilter:
+              - kind: System      
+
     - title: Repository details
       required:
         - repoUrl
@@ -54,7 +71,7 @@ spec:
       name: Preparing Dotnet template
       action: dotnet:template:install
       input:
-        package: Clean.Architecture.Solution.Template::8.0.0-preview.7.2
+        package: Clean.Architecture.Solution.Template::7.0.2
         args:
         - --force
     

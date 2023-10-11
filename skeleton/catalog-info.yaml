@@ -1,0 +1,28 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{values.project_name | dump}}
+  {%- if values.description %}
+  description: ${{values.description | dump}}
+  {%- endif %}
+  annotations:
+    github.com/project-slug: ${{values.destination.owner + "/" + values.destination.repo}}
+    backstage.io/techdocs-ref: dir:.
+    backstage.io/kubernetes-id: ${{values.project_name | dump}}
+    backstage.io/kubernetes-namespace: ${{values.project_k8_namespace | dump}}
+    prometheus.io/alert: all
+  tags:
+    - dotnet
+    - webapi
+  links:
+    - url: https://github.com/${{values.destination.owner}}/${{values.destination.repo}}
+      icon: web
+      title: Github
+    - url: https://github.com/${{values.destination.owner}}/${{values.destination.repo}}/issues
+      icon: web
+      title: Github Issues
+spec:
+  type: service
+  lifecycle: experimental
+  owner: ${{values.owner | dump}}
+  system:  ${{values.system | dump}}
