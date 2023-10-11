@@ -67,7 +67,7 @@ spec:
           - -cf
           - None
           - -o
-          - ${{ parameter.project_name }}
+          - ${{ parameters.project_name }}
           
     - id: publish
       name: Publish
