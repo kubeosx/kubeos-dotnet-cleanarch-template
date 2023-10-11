@@ -71,7 +71,7 @@ spec:
       name: Preparing Dotnet template
       action: dotnet:template:install
       input:
-        package: Clean.Architecture.Solution.Template::7.0.2
+        package: Clean.Architecture.Solution.Template
         args:
         - --force
     
@@ -81,10 +81,28 @@ spec:
       input:
         template: ca-sln
         args:
-          - -cf
-          - None
           - -o
           - ${{ parameters.project_name }}
+
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        copyWithoutRender:
+          - .github/workflows/*
+        values:
+          description: ${{ parameters.description }}
+          project_name: ${{ parameters.project_name }}
+          owner: ${{ parameters.owner }}
+          system: ${{ parameters.system }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          docker_username: ${{ parameters.docker_username }}
+          project_k8_namespace: dev # ket default for this template as a standard to become
+          kustomize_path : ./deploy/k8s/overlays/dev # kepr default for this template as a standar to become
+          project_org : kubeosx # kept default for this template
+          repo_branch: main # kept default for this template
+          http_port: 8080
           
     - id: publish
       name: Publish
