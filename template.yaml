@@ -3,7 +3,7 @@ apiVersion: scaffolder.backstage.io/v1beta3
 kind: Template
 metadata:
   name: dotnet-clean-arch-gitops
-  title: debug
+  title: Kubeos Dotnet Clean Architecture Template deploy to K8s
   description: Template for Dotnet
   tags:
     - debug
@@ -22,6 +22,33 @@ spec:
           ui:field: EntityNamePicker
           maxLength: 50
           pattern: '^[a-z0-9]+$'
+          
+    - title: Repository details
+      required:
+        - repoUrl
+      properties:
+        repoUrl:
+          title: Repository Location
+          type: string
+          ui:field: RepoUrlPicker
+          ui:options:
+            allowedHosts:
+              - github.com
+              
+    - title: Provide Docker information
+      required:
+        - docker_username
+        - docker_password
+      properties:
+        docker_username:
+          title: Name
+          type: string
+          description: Docker user name for login and will be pushed to hub.
+          ui:field: EntityNamePicker
+        docker_password:
+          title: Password
+          type: string
+          description: Passwod for Login, will be stored as secrets
   steps:
     - id: template
       name: Preparing Dotnet template
@@ -30,10 +57,12 @@ spec:
         package: Clean.Architecture.Solution.Template::8.0.0-preview.7.2
         args:
         - --force
-    - id: template
+    
+    - id: Prepare
       name: Preparing Dotnet new Clean Architecture Solution
       action: dotnet:new
       input:
+        targetPath: template/
         template: ca-sln
         args:
           - -cf
@@ -41,3 +70,90 @@ spec:
           - -o
           - ${{ parameter.project_name }}
           
+    - id: publish
+      name: Publish
+      action: publish:github
+      input:
+        allowedHosts: ["github.com"]
+        description: This is ${{ parameters.project_name }}
+        repoUrl: ${{ parameters.repoUrl }}
+        defaultBranch: main
+        repoVisibility: public
+        sourcePath: template  
+        secrets:
+          "DOCKER_USER": ${{ parameters.docker_username }}
+          "DOCKER_PASSWORD" :  ${{ parameters.docker_password }}
+          "AppName": ${{ parameters.project_name }}
+
+    # Fetch Cloud CLuster Repo, Which is responsible to deploying using FLux
+    - id: fetch-remote
+      name: Fetch Current Dev Cluster Files for Sync
+      action: fetch:plain
+      input:
+        url: https://github.com/kubeosx/kubeos-cluster.git
+        targetPath: kubeos
+
+    # Fetch a remote repo for getting template to commit in flux repo.
+    - id: fetch-remote
+      name: Fetch Remote AutoPR Template to Create PR
+      action: fetch:template
+      input:
+        url: https://github.com/kubeosx/kubeos-autopr-templates.git
+        path:
+        targetPath: kubeos/clusters/dev
+        values:
+          component_id: ${{ parameters.project_name }}
+          description: ${{ parameters.description }}
+          artifact_id: ${{ parameters.project_name }}
+          project_name: ${{ parameters.project_name }}
+          owner: ${{ parameters.owner }}
+          system: ${{ parameters.system }}
+          destination: ${{ parameters.repoUrl | parseRepoUrl }}
+          docker_username: ${{ parameters.docker_username }}
+          project_k8_namespace: dev # ket default for this template as a standard to become
+          kustomize_path : ./deploy/k8s/overlays/dev # kepr default for this template as a standar to become
+          project_org : kubeosx # kept default for this template
+          repo_branch: main # kept default for this template
+          http_port: 8080
+
+    # update the kustomization file 
+    - id: append-file
+      name: Append To File Or Create PR
+      action: roadiehq:utils:fs:append
+      input:
+        path: kubeos/clusters/dev/kustomization.yaml
+        content: '${{ "\n  - "+ parameters.project_name }}/'
+
+    # PR back the change
+    - id: pr-repo
+      name: PR to Kubeos-cluster
+      action: publish:github:pull-request
+      input:
+        repoUrl: github.com?repo=kubeos-cluster&owner=kubeosx
+        description: This is commiting project ${{ parameters.project_name }} for deployment
+        branchName: feature/Onboarding-${{ parameters.project_name }}
+        targetBranchName: main
+        gitCommitMessage: Add New Deployment Config
+        title: PR for new app :${{ parameters.project_name }}
+        sourcePath: kubeos/clusters/dev
+        targetPath: clusters/dev
+
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: ${{ steps.publish.output.repoContentsUrl }}
+        catalogInfoPath: "/catalog-info.yaml"
+
+  output: 
+    links:
+      - title: Repository
+        url: ${{ steps.publish.output.remoteUrl }}
+      - title: Open in catalog
+        icon: catalog
+        entityRef: ${{ steps.register.output.entityRef }}
+      - title: Deployment Repo
+        url: ${{ steps.pr-repo.output.remoteUrl }}
+      - title: Pull Request Number
+        url: ${{ steps.pr-repo.output.pullRequestNumber }}
