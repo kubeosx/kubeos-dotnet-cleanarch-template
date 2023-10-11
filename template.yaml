@@ -88,8 +88,9 @@ spec:
       name: Fetch Skeleton + Template
       action: fetch:template
       input:
+        targetPath: ${{ parameters.project_name }}/
         url: ./skeleton
-        copyWithoutRender:
+        copyWithoutTemplating:
           - .github/workflows/*
         values:
           description: ${{ parameters.description }}
